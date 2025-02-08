@@ -1,0 +1,74 @@
+# Default configuration for Prometheus.
+# This is a simplified version that uses the default settings for Prometheus.
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    replicas: 1
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "250m"
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+
+server:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      memory: "200Mi"
+      cpu: "500m"
+    limits:
+      memory: "400Mi"
+      cpu: "1"
+  retention: "10d"
+  storageSpec:
+    volumeClaimTemplate:
+      spec:
+        resources:
+          requests:
+            storage: 8Gi
+        accessModes:
+          - ReadWriteOnce
+
+# Configure the Prometheus scrape configuration
+scrapeConfigs:
+  - job_name: 'kubernetes'
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        target_label: app
+      - source_labels: [__meta_kubernetes_pod_label_component]
+        target_label: component
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod_name
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        target_label: app
+      - source_labels: [__meta_kubernetes_pod_label_component]
+        target_label: component
+
+# Configure additional settings like alerting rules, etc.
+alerting:
+  alertmanagers:
+    - namespace: monitoring
+      name: alertmanager-main
+      port: web
+  rules:
+    alert:
+      - alert: HighCpuUsage
+        expr: sum(rate(container_cpu_usage_seconds_total{container!="",pod!="",namespace="default"}[1m])) by (container) > 0.5
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU usage detected for container {{ $labels.container }}."
+
+# Additional configurations can be added here as needed for your setup.
+prometheus:
+  ruler:
+    enabled: false

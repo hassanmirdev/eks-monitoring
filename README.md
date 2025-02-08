@@ -1,1 +1,1 @@
-# eks-monitoring
+# terraform-project-eks
