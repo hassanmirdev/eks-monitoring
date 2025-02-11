@@ -63,7 +63,7 @@ jobs:
 
       - name: Run TFLint
         run: |
-         cd ./infra/environments/${{ github.event.inputs.environment || 'dev' }}
+         cd ./infra/environment/${{ github.event.inputs.environment || 'dev' }}
 
          # Ensure .tflint.hcl exists
          if [ ! -f ".tflint.hcl" ]; then
@@ -89,25 +89,25 @@ jobs:
       # Step: Run Checkov Security Scan
       - name: Run Checkov
         run: |
-          cd ./infra/environments/${{ github.event.inputs.environment || 'dev' }}
+          cd ./infra/environment/${{ github.event.inputs.environment || 'dev' }}
           checkov --directory . --skip-check CKV_AWS_*,CKV2_AWS_*
 
       # Step: Terraform Init
       - name: Terraform Init
         run: | 
-          cd ./infra/environments/dev
+          cd ./infra/environment/dev
           terraform init
 
       # Step: Run Terraform Validate (validate configuration files)
       - name: Terraform Validate
         run: |
-          cd ./infra/environments/dev
+          cd ./infra/environment/dev
           terraform validate
 
       # Step: Terraform Plan
       - name: Terraform Plan
         run: |
-          cd ./infra/environments/dev
+          cd ./infra/environment/dev
           terraform plan 
 
       # Step: Checkout Repository for PR
@@ -129,7 +129,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         uses: terraform-docs/gh-actions@v1.3.0
         with:
-          working-dir: ./infra/environments/${{ github.event.inputs.environment || 'dev' }}
+          working-dir: ./infra/environment/${{ github.event.inputs.environment || 'dev' }}
           output-file: README.md
           output-method: inject
           git-push: true
@@ -142,12 +142,12 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           header: "Terraform Documentation "
-          path: "./infra/environments/${{ github.event.inputs.environment || 'dev' }}/README.md"
+          path: "./infra/environment/${{ github.event.inputs.environment || 'dev' }}/README.md"
     
       # Step: Apply Terraform if PR is merged
       - name: Apply Terraform on Merge the PR
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
-          cd ./infra/environments/${{ github.event.inputs.environment || 'dev' }}
+          cd ./infra/environment/${{ github.event.inputs.environment || 'dev' }}
           terraform init
           terraform apply -auto-approve
