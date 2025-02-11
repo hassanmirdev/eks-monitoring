@@ -6,9 +6,7 @@ module "vpc" {
   availability_zone   = ["us-east-1a", "us-east-1b"]
 }
 
-output "vpc_id" {
-  value = module.vpc.vpc_id
-}
+
 
 module "iam" {
   source                = "../../modules/iam"
@@ -17,10 +15,6 @@ module "iam" {
 
 }
 
-
-output "eks_cluster_role_arn" {
-  value = module.iam.eks_cluster_role_arn
-}
 
 module "ecr" {
   source = "../../modules/ecr"
