@@ -22,8 +22,9 @@ output "eks_cluster_role_arn" {
   value = module.iam.eks_cluster_role_arn
 }
 
-
-
+module "ecr" {
+  source = "../../modules/ecr"
+}
 
 module "eks" {
   source               = "../../modules/eks"
