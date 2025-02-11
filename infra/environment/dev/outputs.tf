@@ -21,3 +21,12 @@ output "appointment_service_repo_uri" {
   value = module.ecr.appointment_service_repo_uri
  description ="appointment service repo url"
 }
+
+output "eks_cluster_role_arn" {
+  value = module.iam.eks_cluster_role_arn
+  description =  "cluster role arn"
+}
+output "vpc_id" {
+  value = module.vpc.vpc_id
+    description =  "VPC ID"
+}
