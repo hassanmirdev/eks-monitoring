@@ -9,8 +9,10 @@ output "eks_node_role_arn" {
 }
 output "eks_worker_node_policy_attachment" {
   value = aws_iam_role_policy_attachment.eks_worker_node
+  description = "attach policy to worker node"
 }
 
 output "eks_cni_policy_attachment" {
   value = aws_iam_role_policy_attachment.eks_cni_policy
+description = "attach policy to worker node"
 }
