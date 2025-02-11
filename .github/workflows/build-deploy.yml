@@ -1,0 +1,68 @@
+name: Deploy to EKS and Docker Images
+
+on:
+  workflow_dispatch:  # Triggered manually
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # Checkout the repository to get access to the code
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+
+    # Set up Docker Buildx (required for multi-platform support)
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    # Log in to Amazon ECR
+    - name: Log in to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v1
+      env:
+         AWS_REGION: ${{ secrets.AWS_REGION }}
+         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    
+    # Build Docker images for the patient service and appointment service
+    - name: Build Appointment Service Docker Image
+      run: |
+        cd ./app/appointment-service/
+        docker build -t appointment-image:latest .
+        docker tag appointment-image:latest 677276078111.dkr.ecr.us-east-1.amazonaws.com/eks-repo-appointment:latest
+    
+    - name: Build Patient Service Docker Image
+      run: |
+        cd ./app/patient-service/
+        docker build -t patient-image:latest .
+        docker tag patient-image:latest 677276078111.dkr.ecr.us-east-1.amazonaws.com/eks-repo-patient:latest
+    
+    # Push Docker images to ECR
+    - name: Push Appointment Service Image to ECR
+      run: |
+        docker push 677276078111.dkr.ecr.us-east-1.amazonaws.com/eks-repo-appointment:latest
+
+    - name: Push Patient Service Image to ECR
+      run: |
+        docker push 677276078111.dkr.ecr.us-east-1.amazonaws.com/eks-repo-patient:latest
+
+    # Install kubectl to interact with the Kubernetes cluster
+    - name: Set up kubectl
+      uses: aws-actions/configure-kubeconfig@v2
+      with:
+        cluster-name: my-eks-cluster
+        region: us-east-1
+
+    # Apply Kubernetes YAML configurations
+    - name: Apply Kubernetes Configuration Files
+      run: |
+        kubectl apply -f ./k8s/appointment-service-deployment.yaml
+        kubectl apply -f ./k8s/appointment-service-service.yaml
+        kubectl apply -f ./k8s/patient-service-deployment.yaml
+        kubectl apply -f ./k8s/patient-service-service.yaml
+
+    # Run kubectl commands to verify deployment and services
+    - name: Verify the Deployment and Services
+      run: |
+        kubectl get pods
+        kubectl get services
