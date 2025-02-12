@@ -48,10 +48,10 @@ jobs:
 
     # Install kubectl to interact with the Kubernetes cluster
     - name: Set up kubectl
-      uses: aws-actions/configure-kubeconfig@v2
-      with:
-        cluster-name: my-eks-cluster
-        region: us-east-1
+      uses: azure/setup-kubectl@v1
+
+    - name: Set up EKS kubeconfig
+      run: aws eks --region us-west-1 update-kubeconfig --name my-eks-cluster
 
     # Apply Kubernetes YAML configurations
     - name: Apply Kubernetes Configuration Files
