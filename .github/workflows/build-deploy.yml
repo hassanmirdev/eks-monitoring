@@ -29,15 +29,9 @@ jobs:
       with:
         region: us-east-1
 
-    - name: Docker login
+    - name: Docker login to ECR
       run: |
         aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 677276078111.dkr.ecr.us-east-1.amazonaws.com
-      
-      # env:
-      #    AWS_REGION: ${{ secrets.AWS_REGION }}
-      #    AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #    AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    
     # Build Docker images for the patient service and appointment service
     - name: Build Appointment Service Docker Image
       run: |
@@ -70,10 +64,16 @@ jobs:
     # Apply Kubernetes YAML configurations
     - name: Apply Kubernetes Configuration Files
       run: |
-        kubectl apply -f ./k8s/appointment-service-deployment.yaml
-        kubectl apply -f ./k8s/appointment-service-service.yaml
-        kubectl apply -f ./k8s/patient-service-deployment.yaml
-        kubectl apply -f ./k8s/patient-service-service.yaml
+        cd ./app/k8s/
+        kubectl apply -f appointment-service-deployment.yaml
+        kubectl apply -f appointment-service-service.yaml
+        kubectl apply -f patient-service-deployment.yaml
+        kubectl apply -f patient-service-service.yaml
+    
+    # Sleep for a minute so that pods get started
+    - name: Sleep for 60 seconds
+      run: sleep 60
+
 
     # Run kubectl commands to verify deployment and services
     - name: Verify the Deployment and Services
