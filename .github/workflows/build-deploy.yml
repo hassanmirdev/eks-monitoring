@@ -8,6 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      # Configure AWS 
+    - name: Set up AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
     # Checkout the repository to get access to the code
     - name: Checkout Repository
       uses: actions/checkout@v2
@@ -19,10 +26,17 @@ jobs:
     # Log in to Amazon ECR
     - name: Log in to Amazon ECR
       uses: aws-actions/amazon-ecr-login@v1
-      env:
-         AWS_REGION: ${{ secrets.AWS_REGION }}
-         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      with:
+        region: us-east-1
+
+    - name: Docker login
+      run: |
+        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 677276078111.dkr.ecr.us-east-1.amazonaws.com
+      
+      # env:
+      #    AWS_REGION: ${{ secrets.AWS_REGION }}
+      #    AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #    AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     
     # Build Docker images for the patient service and appointment service
     - name: Build Appointment Service Docker Image
