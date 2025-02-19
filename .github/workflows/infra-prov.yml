@@ -1,4 +1,4 @@
-name: Deploy AWS EKS.
+name: Provision EKS Infra
 run-name: infra prov
 on:
   workflow_dispatch:
